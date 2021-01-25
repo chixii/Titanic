@@ -1,8 +1,13 @@
 # data analysis and wrangling
+import warnings
+
 import inline
 import pandas as pd
 import numpy as np
 import random as rnd
+import os
+import re
+import warnings
 
 # visualization
 import seaborn as sns
@@ -75,6 +80,10 @@ print(train_df.head())
 
 train_df = train_df.drop(['Name', 'PassengerId'], axis=1)
 test_df = test_df.drop(['Name'], axis=1)
+# train_df = train_df.drop(['Title'], axis=1)
+# test_df = test_df.drop(['Title'], axis=1)
+# train_df = train_df.drop(['Title', 'Name', 'PassengerId'], axis=1)
+# test_df = test_df.drop(['Title', 'Name'], axis=1)
 combine = [train_df, test_df]
 train_df.shape, test_df.shape
 
@@ -97,45 +106,46 @@ train_df.head()
 guess_ages = np.zeros((2, 3))
 guess_ages
 
+# for dataset in combine:
+#     for i in range(0, 2):
+#         for j in range(0, 3):
+#             guess_df = dataset[(dataset['Sex'] == i) &
+#                                (dataset['Pclass'] == j + 1)]['Age'].dropna()
+#
+#             # age_mean = guess_df.mean()
+#             # age_std = guess_df.std()
+#             # age_guess = rnd.uniform(age_mean - age_std, age_mean + age_std)
+#
+#             age_guess = guess_df.median()
+#
+#             # Convert random age float to nearest .5 age
+#             guess_ages[i, j] = int((age_guess / 0.5 + 0.5) * 0.5)
+#
+#     for i in range(0, 2):
+#         for j in range(0, 3):
+#             dataset.loc[(dataset.Age.isnull()) & (dataset.Sex == i) & (dataset.Pclass == j + 1),
+#                         'Age'] = guess_ages[i, j]
+#
+#     dataset['Age'] = dataset['Age'].astype(int)
 for dataset in combine:
-    for i in range(0, 2):
-        for j in range(0, 3):
-            guess_df = dataset[(dataset['Sex'] == i) &
-                               (dataset['Pclass'] == j + 1)]['Age'].dropna()
-
-            # age_mean = guess_df.mean()
-            # age_std = guess_df.std()
-            # age_guess = rnd.uniform(age_mean - age_std, age_mean + age_std)
-
-            age_guess = guess_df.median()
-
-            # Convert random age float to nearest .5 age
-            guess_ages[i, j] = int((age_guess / 0.5 + 0.5) * 0.5)
-
-    for i in range(0, 2):
-        for j in range(0, 3):
-            dataset.loc[(dataset.Age.isnull()) & (dataset.Sex == i) & (dataset.Pclass == j + 1),
-                        'Age'] = guess_ages[i, j]
-
-    dataset['Age'] = dataset['Age'].astype(int)
-
+    dataset.loc[(dataset.Age.isnull()),'Age'] = dataset['Age'].mean()
 train_df.head()
 
-train_df['AgeBand'] = pd.cut(train_df['Age'], 5)
-train_df[['AgeBand', 'Survived']].groupby(['AgeBand'], as_index=False).mean().sort_values(by='AgeBand', ascending=True)
+# train_df['AgeBand'] = pd.cut(train_df['Age'], 5)
+# train_df[['AgeBand', 'Survived']].groupby(['AgeBand'], as_index=False).mean().sort_values(by='AgeBand', ascending=True)
 
-for dataset in combine:
-    dataset.loc[dataset['Age'] <= 16, 'Age'] = 0
-    dataset.loc[(dataset['Age'] > 16) & (dataset['Age'] <= 32), 'Age'] = 1
-    dataset.loc[(dataset['Age'] > 32) & (dataset['Age'] <= 48), 'Age'] = 2
-    dataset.loc[(dataset['Age'] > 48) & (dataset['Age'] <= 64), 'Age'] = 3
-    dataset.loc[dataset['Age'] > 64, 'Age']
+# for dataset in combine:
+#     dataset.loc[dataset['Age'] <= 16, 'Age'] = 0
+#     dataset.loc[(dataset['Age'] > 16) & (dataset['Age'] <= 32), 'Age'] = 1
+#     dataset.loc[(dataset['Age'] > 32) & (dataset['Age'] <= 48), 'Age'] = 2
+#     dataset.loc[(dataset['Age'] > 48) & (dataset['Age'] <= 64), 'Age'] = 3
+#     dataset.loc[dataset['Age'] > 64, 'Age']
 
-train_df.head()
-
-train_df = train_df.drop(['AgeBand'], axis=1)
-combine = [train_df, test_df]
-train_df.head()
+# train_df.head()
+#
+# train_df = train_df.drop(['AgeBand'], axis=1)
+# combine = [train_df, test_df]
+# train_df.head()
 
 for dataset in combine:
     dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
@@ -153,12 +163,12 @@ train_df = train_df.drop(['Parch', 'SibSp', 'FamilySize'], axis=1)
 test_df = test_df.drop(['Parch', 'SibSp', 'FamilySize'], axis=1)
 combine = [train_df, test_df]
 
-train_df.head()
+# print(train_df.head())
 
-for dataset in combine:
-    dataset['Age*Class'] = dataset.Age * dataset.Pclass
-
-train_df.loc[:, ['Age*Class', 'Age', 'Pclass']].head(10)
+# for dataset in combine:
+#     dataset['Age*Class'] = dataset.Age * dataset.Pclass
+#
+# train_df.loc[:, ['Age*Class', 'Age', 'Pclass']].head(10)
 
 freq_port = train_df.Embarked.dropna().mode()[0]
 freq_port
@@ -173,24 +183,24 @@ for dataset in combine:
 
 train_df.head()
 
-test_df['Fare'].fillna(test_df['Fare'].dropna().median(), inplace=True)
-test_df.head()
+test_df['Fare'].fillna(test_df['Fare'].dropna().mean(), inplace=True)
+# test_df.head()
+#
+# train_df['FareBand'] = pd.qcut(train_df['Fare'], 4)
+# train_df[['FareBand', 'Survived']].groupby(['FareBand'], as_index=False).mean().sort_values(by='FareBand',
+#                                                                                             ascending=True)
 
-train_df['FareBand'] = pd.qcut(train_df['Fare'], 4)
-train_df[['FareBand', 'Survived']].groupby(['FareBand'], as_index=False).mean().sort_values(by='FareBand',
-                                                                                            ascending=True)
+# for dataset in combine:
+#     dataset.loc[dataset['Fare'] <= 7.91, 'Fare'] = 0
+#     dataset.loc[(dataset['Fare'] > 7.91) & (dataset['Fare'] <= 14.454), 'Fare'] = 1
+#     dataset.loc[(dataset['Fare'] > 14.454) & (dataset['Fare'] <= 31), 'Fare'] = 2
+#     dataset.loc[dataset['Fare'] > 31, 'Fare'] = 3
+#     dataset['Fare'] = dataset['Fare'].astype(int)
 
-for dataset in combine:
-    dataset.loc[dataset['Fare'] <= 7.91, 'Fare'] = 0
-    dataset.loc[(dataset['Fare'] > 7.91) & (dataset['Fare'] <= 14.454), 'Fare'] = 1
-    dataset.loc[(dataset['Fare'] > 14.454) & (dataset['Fare'] <= 31), 'Fare'] = 2
-    dataset.loc[dataset['Fare'] > 31, 'Fare'] = 3
-    dataset['Fare'] = dataset['Fare'].astype(int)
-
-train_df = train_df.drop(['FareBand'], axis=1)
+# train_df = train_df.drop(['FareBand'], axis=1)
 combine = [train_df, test_df]
 
-# print(train_df.head(10))
+print(train_df.head(10))
 
 # print(test_df.head(10))
 
@@ -211,35 +221,35 @@ coeff_df = pd.DataFrame(train_df.columns.delete(0))
 coeff_df.columns = ['Feature']
 coeff_df["Correlation"] = pd.Series(logreg.coef_[0])
 
-# print(coeff_df.sort_values(by='Correlation', ascending=False))
+print(coeff_df.sort_values(by='Correlation', ascending=False))
 
 # Support Vector Machines
 svc = SVC()
 svc.fit(X_train, Y_train)
 Y_pred = svc.predict(X_test)
 acc_svc = round(svc.score(X_train, Y_train) * 100, 2)
-print("SVC score: " + '{:2.2f}'.format(acc_svc))
+
 
 # KNN or k-Nearest Neighbors
 knn = KNeighborsClassifier(n_neighbors = 3)
 knn.fit(X_train, Y_train)
 Y_pred = knn.predict(X_test)
 acc_knn = round(knn.score(X_train, Y_train) * 100, 2)
-print("KNN score: " + '{:2.2f}'.format(acc_knn))
+
 
 # Gaussian Naive Bayes
 gaussian = GaussianNB()
 gaussian.fit(X_train, Y_train)
 Y_pred = gaussian.predict(X_test)
 acc_gaussian = round(gaussian.score(X_train, Y_train) * 100, 2)
-print("Gaussian score: " +  '{:2.2f}'.format(acc_gaussian))
+
 
 # Perceptron
 perceptron = Perceptron()
 perceptron.fit(X_train, Y_train)
 Y_pred = perceptron.predict(X_test)
 acc_perceptron = round(perceptron.score(X_train, Y_train) * 100, 2)
-print("Perceptron score: " + '{:2.2f}'.format(acc_perceptron))
+
 
 
 # Linear SVC
@@ -247,29 +257,30 @@ linear_svc = LinearSVC()
 linear_svc.fit(X_train, Y_train)
 Y_pred = linear_svc.predict(X_test)
 acc_linear_svc = round(linear_svc.score(X_train, Y_train) * 100, 2)
-print("Linear SVC score: " + '{:2.2f}'.format(acc_linear_svc))
+
 
 # Stochastic Gradient Descent
 sgd = SGDClassifier()
 sgd.fit(X_train, Y_train)
 Y_pred = sgd.predict(X_test)
 acc_sgd = round(sgd.score(X_train, Y_train) * 100, 2)
-print("Stochastic Gradient Descent score: " + '{:2.2f}'.format(acc_sgd))
+
+
 
 # Decision Tree
 decision_tree = DecisionTreeClassifier()
 decision_tree.fit(X_train, Y_train)
 Y_pred = decision_tree.predict(X_test)
 acc_decision_tree = round(decision_tree.score(X_train, Y_train) * 100, 2)
-print("Decision Tree score: " + '{:2.2f}'.format(acc_decision_tree))
+
 
 # Random Forest
-random_forest = RandomForestClassifier(n_estimators=100)
+random_forest = RandomForestClassifier(n_estimators=100,n_jobs=1)
 random_forest.fit(X_train, Y_train)
 Y_pred = random_forest.predict(X_test)
 random_forest.score(X_train, Y_train)
 acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
-print("Random Forest score: " + '{:2.2f}'.format(acc_random_forest))
+
 
 models = pd.DataFrame({
     'Model': ['Support Vector Machines', 'KNN', 'Logistic Regression',
@@ -286,3 +297,4 @@ submission = pd.DataFrame({
         "Survived": Y_pred
     })
 submission.to_csv('submission.csv', index=False)
+
