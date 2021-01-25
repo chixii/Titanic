@@ -24,8 +24,7 @@ from sklearn.linear_model import Perceptron
 from sklearn.linear_model import SGDClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-train_df = pd.read_csv('HousePrice/Data/train.csv')
-test_df = pd.read_csv('HousePrice/Data/test.csv')
+
 
 def FindandPrediction():
     # Logistic Regression
@@ -107,28 +106,34 @@ def FindandPrediction():
     })
     submission.to_csv('submission.csv', index=False)
 
-def main():
-    combine = [train_df, test_df]
-    print(train_df.columns.values)
-    # train_df.head()
-    df_train = pd.DataFrame(train_df['MSZoning'])
-    df_test = pd.DataFrame(train_df['MSZoning'])
-    print(list(df_train['MSZoning'].value_counts().index))
-    print(list(df_test['MSZoning'].value_counts().index))
-    for dataset in combine:
-        dataset['MSZoning'] = dataset['MSZoning'].map({'RL': 1, 'RM': 2, 'FV': 3, 'RH': 4, 'C (all)': 5}).astype(int)
 
-    # g = sns.FacetGrid(train_df, col='Survived')
-    # g.map(plt.hist, 'Age', bins=20, density=True)
-    # grid = sns.FacetGrid(train_df, col='Survived', row='Pclass', height=2.2, aspect=1.6)
-    # grid.map(plt.hist, 'Age', alpha=.5, bins=20)
-    # grid.add_legend();
+train_df = pd.read_csv('HousePrice/Data/train.csv')
+test_df = pd.read_csv('HousePrice/Data/test.csv')
+
+train_df = train_df.drop(["Alley", "FireplaceQu", "PoolQC", "Fence", "MiscFeature"], axis=1)
+test_df = test_df.drop(["Alley", "FireplaceQu", "PoolQC", "Fence", "MiscFeature"], axis=1)
+combine = [train_df, test_df]
+print(train_df.columns)
+print(train_df.info())
+# df_train = pd.DataFrame(train_df['MSZoning'])
+# df_test = pd.DataFrame(train_df['MSZoning'])
+# print(list(df_train['MSZoning'].value_counts().index))
+# print(list(df_test['MSZoning'].value_counts().index))
+df_train = pd.DataFrame(train_df['LotFrontage'])
+print(list(df_train['LotFrontage'].value_counts().index))
+for dataset in combine:
+    dataset['MSZoning'] = dataset['MSZoning'].map({'RL': 1, 'RM': 2,'FV': 3, 'RH': 4, 'C (all)': 5})
+for dataset in combine:
+    dataset['Street'] = dataset['Street'].map({'Pave': 1, 'Grvl': 2})
+for dataset in combine:
+    dataset['LotShape'] = dataset['LotShape'].map({'Reg': 1, 'IR1': 2, 'IR2': 3, 'IR3': 4})
+# g = sns.FacetGrid(train_df, col='Survived')
+# g.map(plt.hist, 'Age', bins=20, density=True)
+# grid = sns.FacetGrid(train_df, col='Survived', row='Pclass', height=2.2, aspect=1.6)
+# grid.map(plt.hist, 'Age', alpha=.5, bins=20)
+# grid.add_legend();
 
 
-
-
-
-main()
 X_train = train_df
 Y_train = train_df["SalePrice"]
 X_test = test_df.drop("Id", axis=1).copy()
